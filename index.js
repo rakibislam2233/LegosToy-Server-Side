@@ -35,6 +35,14 @@ async function run() {
       const result = await AllToyCollection.find().toArray();
       res.send(result);
     });
+    //get data categories in server
+    app.get("/getCategories/:category", async (req, res) =>{
+      const subCategory = req.params.category.toLowerCase();
+      if(subCategory =="lego-city" || subCategory=="lego-car" || subCategory == "lego-architecture"){
+        const result = await AllToyCollection.find({category:subCategory}).toArray()
+        res.send(result)
+      }
+    })
     //get index for data 
     app.get('/searchByToyName/:name',async(req,res)=>{
         const name = req.params.name;
