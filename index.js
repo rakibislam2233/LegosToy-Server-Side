@@ -26,11 +26,25 @@ async function run() {
     await client.connect();
 
     const AllToyCollection = client.db("legosToyDB").collection("Toy");
+    //create a index keys 
+    const indexKeys = {toyName:1,category:1};
+    const indexOptions = {Name:"toyNameCategory"}
+    await AllToyCollection.createIndex(indexKeys,indexOptions)
     //get allToy in server
     app.get("/allToy", async (req, res) => {
       const result = await AllToyCollection.find().toArray();
       res.send(result);
     });
+    //get index for data 
+    app.get('/searchByToyName/:name',async(req,res)=>{
+        const name = req.params.name;
+        const result = await AllToyCollection.find({
+            $or:[
+                {toyName:{$regex:name,$options:'i'}}
+            ]
+        }).toArray()
+        res.send(result)
+    })
     //get single toy
     app.get("/singleToy/:id", async (req, res) => {
       const id = req.params.id;
