@@ -32,14 +32,14 @@ async function run() {
     await AllToyCollection.createIndex(indexKeys,indexOptions)
     //get allToy in server
     app.get("/allToy", async (req, res) => {
-      const result = await AllToyCollection.find().toArray();
+      const result = await AllToyCollection.find().sort({price:1}).toArray();
       res.send(result);
     });
     //get data categories in server
     app.get("/getCategories/:category", async (req, res) =>{
       const subCategory = req.params.category.toLowerCase();
       if(subCategory =="lego-city" || subCategory=="lego-car" || subCategory == "lego-architecture"){
-        const result = await AllToyCollection.find({category:subCategory}).toArray()
+        const result = await AllToyCollection.find({category:subCategory}).sort({price:-1}).toArray()
         res.send(result)
       }
     })
@@ -50,7 +50,7 @@ async function run() {
             $or:[
                 {toyName:{$regex:name,$options:'i'}}
             ]
-        }).toArray()
+        }).sort({price:1}).toArray()
         res.send(result)
     })
     //get single toy
@@ -64,12 +64,13 @@ async function run() {
     app.get("/myToy/:email", async (req, res) => {
       const email = req.params.email;
       const query = {sellerEmail: email };
-      const result = await AllToyCollection.find(query).toArray();
+      const result = await AllToyCollection.find(query).sort({date:-1}).toArray();
       res.send(result);
     });
     //added toy in server
     app.post("/allToy", async (req, res) => {
       const toy = req.body;
+      toy.date = new Date()
       const result = await AllToyCollection.insertOne(toy);
       res.send(result);
     });
