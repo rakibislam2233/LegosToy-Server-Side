@@ -60,6 +60,7 @@ async function run() {
       const result = await AllToyCollection.findOne(query);
       res.send(result);
     });
+    //get user email for data
     app.get("/myToyEmail/", async (req, res) => {
       const email = req.query.email;
       const sort = req.query.sort;
@@ -69,6 +70,7 @@ async function run() {
       res.send(result);
 
     })
+    //post addedtoy in a mongodb
     app.post("/addedToy", async (req, res) => {
       const toy = req.body;
       toy.date = new Date()
