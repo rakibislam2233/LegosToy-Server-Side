@@ -23,14 +23,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const AllToyCollection = client.db("legosToyDB").collection("Toy");
-    //create a index keys 
-    const indexKeys = {toyName:1,category:1};
-    const indexOptions = {Name:"toyNameCategory"}
-    await AllToyCollection.createIndex(indexKeys,indexOptions)
-    //get allToy in server
     app.get("/allToy", async (req, res) => {
       const result = await AllToyCollection.find().sort({date:1}).toArray();
       res.send(result);
@@ -54,11 +49,8 @@ async function run() {
     //get index for data 
     app.get('/searchByToyName/:name',async(req,res)=>{
         const name = req.params.name;
-        const result = await AllToyCollection.find({
-            $or:[
-                {toyName:{$regex:name,$options:'i'}}
-            ]
-        }).sort({price:1}).toArray()
+        const AllToy = await AllToyCollection.find().toArray();
+        const result = AllToy.filter((data) => data.toyName.toLowerCase().includes(name.toLowerCase()));
         res.send(result)
     })
     //get single toy
@@ -68,14 +60,15 @@ async function run() {
       const result = await AllToyCollection.findOne(query);
       res.send(result);
     });
-    //get my to
-    app.get("/myToy/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = {sellerEmail: email };
-      const result = await AllToyCollection.find(query).sort({price:-1}).toArray();
+    app.get("/myToyEmail/", async (req, res) => {
+      const email = req.query.email;
+      const sort = req.query.sort;
+      const query = {sellerEmail: email};
+      const sorting = {price:sort}
+      const result = await AllToyCollection.find(query).sort(sorting).toArray();
       res.send(result);
-    });
-    //added toy in server
+
+    })
     app.post("/addedToy", async (req, res) => {
       const toy = req.body;
       toy.date = new Date()
@@ -93,7 +86,6 @@ async function run() {
           description:updateInfo.description,
           quantity:updateInfo.quantity,
           price:updateInfo.price,
-          ...updateInfo
         }
       }
 
@@ -108,16 +100,14 @@ async function run() {
         res.send(result);
     })
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
-run().catch(console.dir);
+run().catch(console.log);
 
 app.get("/", (req, res) => {
   res.send("welcome to my server");
